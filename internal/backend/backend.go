@@ -24,6 +24,8 @@ import (
 const maxLoginAttempts = 3
 
 type Backend struct {
+	authorizer connector.Authorizer
+
 	// dataDir is the directory in which backend files should be stored.
 	dataDir string
 
@@ -51,8 +53,10 @@ type Backend struct {
 	imapLimits limits.IMAP
 }
 
-func New(dataDir, databaseDir string, storeBuilder store.Builder, delim string, loginJailTime time.Duration, imapLimits limits.IMAP) (*Backend, error) {
+func New(authorizer connector.Authorizer, dataDir, databaseDir string, storeBuilder store.Builder, delim string,
+	loginJailTime time.Duration, imapLimits limits.IMAP) (*Backend, error) {
 	return &Backend{
+		authorizer:    authorizer,
 		dataDir:       dataDir,
 		databaseDir:   databaseDir,
 		delim:         delim,
@@ -231,7 +235,7 @@ func (b *Backend) getUserID(ctx context.Context, username string, password []byt
 	b.loginWG.Wait()
 
 	for _, user := range b.users {
-		if user.connector.Authorize(username, password) {
+		if b.authorizer.Authorize(username, password) {
 			atomic.StoreInt32(&b.loginErrorCount, 0)
 			return user.userID, nil
 		}

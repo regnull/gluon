@@ -2,11 +2,13 @@ package gluon
 
 import (
 	"crypto/tls"
-	"github.com/ProtonMail/gluon/internal/db"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"time"
+
+	"github.com/ProtonMail/gluon/connector"
+	"github.com/ProtonMail/gluon/internal/db"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ProtonMail/gluon/imap"
 	"github.com/ProtonMail/gluon/internal/backend"
@@ -20,6 +22,7 @@ import (
 )
 
 type serverBuilder struct {
+	authorizer           connector.Authorizer
 	dataDir              string
 	databaseDir          string
 	delim                string
@@ -39,6 +42,7 @@ type serverBuilder struct {
 
 func newBuilder() (*serverBuilder, error) {
 	return &serverBuilder{
+		authorizer:           &connector.DummyAuthorizer{},
 		delim:                "/",
 		cmdExecProfBuilder:   &profiling.NullCmdExecProfilerBuilder{},
 		storeBuilder:         &store.OnDiskStoreBuilder{},
@@ -77,6 +81,7 @@ func (builder *serverBuilder) build() (*Server, error) {
 	}
 
 	backend, err := backend.New(
+		builder.authorizer,
 		builder.dataDir,
 		builder.databaseDir,
 		builder.storeBuilder,

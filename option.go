@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/ProtonMail/gluon/connector"
 	"github.com/ProtonMail/gluon/imap"
 	limits2 "github.com/ProtonMail/gluon/limits"
 	"github.com/ProtonMail/gluon/profiling"
@@ -216,4 +217,16 @@ func (w withUIDValidityGenerator) config(builder *serverBuilder) {
 
 func WithUIDValidityGenerator(generator imap.UIDValidityGenerator) Option {
 	return &withUIDValidityGenerator{generator: generator}
+}
+
+type withAuthorizer struct {
+	authorizer connector.Authorizer
+}
+
+func (w withAuthorizer) config(builder *serverBuilder) {
+	builder.authorizer = w.authorizer
+}
+
+func WithAuthorizer(authorizer connector.Authorizer) Option {
+	return &withAuthorizer{authorizer: authorizer}
 }

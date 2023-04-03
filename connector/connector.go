@@ -12,9 +12,6 @@ var ErrOperationNotAllowed = errors.New("operation not allowed")
 
 // Connector connects the gluon server to a remote mail store.
 type Connector interface {
-	// Authorize returns whether the given username/password combination are valid for this connector.
-	Authorize(username string, password []byte) bool
-
 	// CreateMailbox creates a mailbox with the given name.
 	CreateMailbox(ctx context.Context, name []string) (imap.Mailbox, error)
 
